@@ -116,20 +116,21 @@ class ParticleFilter(object):
         # Hint: To maximize speed, try to implement the resampling algorithm
         #       without for loops. You may find np.linspace(), np.cumsum(), and
         #       np.searchsorted() useful. This results in a ~10x speedup.
-        r = np.random.uniform(0,1./self.M)
+
         i = 0
         c = ws[0]
-        s = (np.sum(ws))
+        s = np.sum(ws)
+        #j = 0
         for m in range(self.M):
             u = s*(r + (m/self.M))
             while c < u:
                 i = i + 1
                 c = c + ws[i]
-            idx = np.searchsorted(self.ws, ws[i])
-            self.xs[idx] = xs[idx]
+
+            self.xs[i,:] = xs[i,:]
             self.ws[i] = ws[i]
-        
-        return idx
+            #j += 1
+
         ########## Code ends here ##########
 
     def measurement_model(self, z_raw, Q_raw):
@@ -198,9 +199,9 @@ class MonteCarloLocalization(ParticleFilter):
         
         def vectorized_compute_dynamics(us, dt):
             
-            g = np.zeros((us.shape[0],3))
-            idx_small_omg = np.argwhere(us[:,1] < EPSILON_OMEGA)[:,0]
-            idx_omg = np.argwhere(us[:,1] >= EPSILON_OMEGA)[:,0]
+            g = np.zeros((self.M,3))
+            idx_small_omg = np.argwhere(np.abs(us[:,1]) < EPSILON_OMEGA)[:,0]
+            idx_omg = np.argwhere(np.abs(us[:,1]) >= EPSILON_OMEGA)[:,0]
             
             if len(idx_small_omg) > 0:                
                 theta_t = self.xs[idx_small_omg,2] + us[idx_small_omg,1] * dt
@@ -323,7 +324,7 @@ class MonteCarloLocalization(ParticleFilter):
         vs = np.zeros((self.M,I,2))
         hs = self.compute_predicted_measurements()
         
-        for m in range(hs.shape[0]):
+        for m in range(self.M):
             
             for ii in range(z_raw.shape[1]):
                 
