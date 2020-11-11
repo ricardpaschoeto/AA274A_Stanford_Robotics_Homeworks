@@ -325,10 +325,8 @@ class EkfSlam(Ekf):
         g[0:3] = g_l
         
         Gx = scipy.linalg.block_diag(Gx_l, np.eye(N-3))
-#        Gx = scipy.linalg.block_diag(Gx_l, self.Sigma[3:N,3:N])
         
         Gu[0:3, 0:2] = Gu_l
-#        Gu[0:3, 0:3] = Gu_l
         
         ########## Code ends here ##########
 
